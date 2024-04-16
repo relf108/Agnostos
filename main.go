@@ -6,11 +6,13 @@ import (
 )
 
 func main() {
-	out, err := docker.StartDaemon()
-	if err != "" {
-		panic(err)
-	}
-	println(out)
-	cli.ReadArgs()
-	docker.Run()
+	docker.StartDaemon()
+	args := cli.ParseArgs()
+	println(
+		string(args.EnvOperator),
+		string(args.EnvName),
+		string(args.Lang.Name),
+		string(args.Lang.Version),
+	)
+docker.Run()
 }

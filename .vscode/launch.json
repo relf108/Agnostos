@@ -11,8 +11,14 @@
       "host": "127.0.0.1",
       "program": "${workspaceFolder}",
       "env": {},
-      "args": [],
-      "showLog": true
+      "args": [
+        "new",
+        "new-env",
+        "python",
+        "3.12"
+      ],
+      "showLog": true,
+      "console": "internalConsole"
     }
   ]
 }

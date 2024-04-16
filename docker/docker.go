@@ -2,26 +2,28 @@ package docker
 
 import (
 	"context"
-	"io"
 	"os"
 	"os/exec"
 	"runtime"
 
+	// "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
 )
 
-func StartDaemon() (out string, error string) {
-	// TODO @suttont: Test this on Linux/Windows
+func StartDaemon() {
 	var cmdArr []string
+
 	switch os := runtime.GOOS; os {
 	case "darwin":
 		cmdArr = []string{"open", "--background", "-a", "Docker"}
 	case "windows":
 		cmdArr = []string{"start-service", "docker"}
+	case "linux":
+		cmdArr = []string{"systemctl", "start", "docker"}
 	}
+
 	i := 0
 	cmdFirst := cmdArr[i]
 	cmdArr = append(cmdArr[:i], cmdArr[i+1:]...)
@@ -29,21 +31,25 @@ func StartDaemon() (out string, error string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
+
 	if err != nil {
-		return "", err.Error()
+		panic(err)
 	}
-	return "Docker daemon started", ""
+	println("Docker daemon started")
 }
 
 func StopDaemon() (out string, error string) {
-	// TODO @suttont: Test on all platforms - generated code
 	var cmdArr []string
+
 	switch os := runtime.GOOS; os {
 	case "darwin":
 		cmdArr = []string{"osascript", "-e", `quit app "Docker"`}
 	case "windows":
 		cmdArr = []string{"stop-service", "docker"}
+	case "linux":
+		cmdArr = []string{"systemctl", "stop", "docker"}
 	}
+
 	i := 0
 	cmdFirst := cmdArr[i]
 	cmdArr = append(cmdArr[:i], cmdArr[i+1:]...)
@@ -51,6 +57,7 @@ func StopDaemon() (out string, error string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
+
 	if err != nil {
 		return "", err.Error()
 	}
@@ -58,44 +65,37 @@ func StopDaemon() (out string, error string) {
 }
 
 func Run() {
+
 	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+
+	// Create a new Docker client
+	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
-	defer cli.Close()
 
-	reader, err := cli.ImagePull(ctx, "docker.io/library/alpine", image.PullOptions{})
-	if err != nil {
-		panic(err)
-	}
-	io.Copy(os.Stdout, reader)
+	// Pull the latest Ubuntu image
+	_, err = cli.ImagePull(ctx, "docker.io/library/ubuntu:latest", image.PullOptions{})
 
+	// Create the container ready to be exec into
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: "alpine",
-		Cmd:   []string{"echo", "hello world"},
+		Tty:        true,
+		Image:      "ubuntu:latest",
+		Entrypoint: []string{"tail", "-f", "/dev/null"},
 	}, nil, nil, nil, "")
 	if err != nil {
 		panic(err)
 	}
 
+	// Start the container
 	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		panic(err)
 	}
 
-	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
-	select {
-	case err := <-errCh:
-		if err != nil {
-			panic(err)
-		}
-	case <-statusCh:
-	}
-
-	out, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{ShowStdout: true})
-	if err != nil {
-		panic(err)
-	}
-
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	// use normal cli commands to exec into the container
+	cmd := exec.Command("/bin/sh", []string{"-c", "docker exec -it \"" + resp.ID + "\" \"/bin/sh\""}...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Run()
 }
