@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"io"
 	"os"
 	"os/exec"
 	"runtime"
@@ -12,6 +13,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
+// TODO @suttont: Test this function on all OSs
 func StartDaemon() {
 	var cmdArr []string
 
@@ -38,6 +40,7 @@ func StartDaemon() {
 	println("Docker daemon started")
 }
 
+// TODO @suttont: Test this function on all OSs
 func StopDaemon() (out string, error string) {
 	var cmdArr []string
 
@@ -64,6 +67,7 @@ func StopDaemon() (out string, error string) {
 	return "Docker daemon stopped", ""
 }
 
+// TODO @suttont: use incoming args to determine the image to pull
 func Run() {
 
 	ctx := context.Background()
@@ -74,13 +78,20 @@ func Run() {
 		panic(err)
 	}
 
-	// Pull the latest Ubuntu image
-	_, err = cli.ImagePull(ctx, "docker.io/library/ubuntu:latest", image.PullOptions{})
+	// Pull the latest Lang image
+	// TODO @suttont: Try skipping this step and only pull if an err occurs
+	reader, err := cli.ImagePull(ctx, "golang:latest", image.PullOptions{})
+	if err != nil {
+		panic(err)
+	}
+	defer reader.Close()
+	io.Copy(os.Stdout, reader)
 
 	// Create the container ready to be exec into - if the container stops immediately we can fix this by adding a `tail -f /dev/null` command
+	// TODO @suttont: Try skipping this step and only pull if an err occurs, we could check for existing containers and exec into them
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Tty:   true,
-		Image: "python:latest",
+		Image: "golang:latest",
 	}, nil, nil, nil, "")
 	if err != nil {
 		panic(err)
