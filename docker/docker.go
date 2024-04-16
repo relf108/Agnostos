@@ -77,11 +77,10 @@ func Run() {
 	// Pull the latest Ubuntu image
 	_, err = cli.ImagePull(ctx, "docker.io/library/ubuntu:latest", image.PullOptions{})
 
-	// Create the container ready to be exec into
+	// Create the container ready to be exec into - if the container stops immediately we can fix this by adding a `tail -f /dev/null` command
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Tty:        true,
-		Image:      "ubuntu:latest",
-		Entrypoint: []string{"tail", "-f", "/dev/null"},
+		Tty:   true,
+		Image: "python:latest",
 	}, nil, nil, nil, "")
 	if err != nil {
 		panic(err)
