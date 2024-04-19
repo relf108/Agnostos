@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"runtime"
 
-	// "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
@@ -67,8 +66,7 @@ func StopDaemon() (out string, error string) {
 	return "Docker daemon stopped", ""
 }
 
-// TODO @suttont: use incoming args to determine the image to pull
-func Run() {
+func CreateEnv(envName string, langName string, langVersion string) string {
 
 	ctx := context.Background()
 
@@ -78,9 +76,9 @@ func Run() {
 		panic(err)
 	}
 
-	// Pull the latest Lang image
-	// TODO @suttont: Try skipping this step and only pull if an err occurs
-	reader, err := cli.ImagePull(ctx, "golang:latest", image.PullOptions{})
+	imageStr := langName + ":" + langVersion
+
+	reader, err := cli.ImagePull(ctx, imageStr, image.PullOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -88,22 +86,27 @@ func Run() {
 	io.Copy(os.Stdout, reader)
 
 	// Create the container ready to be exec into - if the container stops immediately we can fix this by adding a `tail -f /dev/null` command
-	// TODO @suttont: Try skipping this step and only pull if an err occurs, we could check for existing containers and exec into them
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Tty:   true,
-		Image: "golang:latest",
+		Image: imageStr,
 	}, nil, nil, nil, "")
 	if err != nil {
 		panic(err)
 	}
 
-	// Start the container
-	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+	return resp.ID
+}
+
+func EnterEnv(containerId string) {
+	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+	if err := cli.ContainerStart(context.Background(), containerId, container.StartOptions{}); err != nil {
 		panic(err)
 	}
 
-	// use normal cli commands to exec into the container
-	cmd := exec.Command("/bin/sh", []string{"-c", "docker exec -it \"" + resp.ID + "\" \"/bin/sh\""}...)
+	cmd := exec.Command("/bin/sh", []string{"-c", "docker exec -it \"" + containerId + "\" \"/bin/sh\""}...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
