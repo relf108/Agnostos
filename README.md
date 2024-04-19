@@ -24,6 +24,7 @@ _A Language agnostic Env manager_
   - [ ] Point to local path containing rc files to set default (or per-environment) rc files.
 - [ ] Export env to dockerfile.
 - [ ] Support remote dev via VScode/Jetbrains IDEs
+- [ ] Support config file (.pkl).
 
 ## Future Features
 

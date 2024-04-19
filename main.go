@@ -3,6 +3,7 @@ package main
 import (
 	"agnostos.com/cli"
 	"agnostos.com/docker"
+	"agnostos.com/env"
 )
 
 func main() {
@@ -14,6 +15,6 @@ func main() {
 		string(args.Lang.Name),
 		string(args.Lang.Version),
 	)
-	env := docker.CreateEnv(args.EnvName, args.Lang.Name, args.Lang.Version)
-	docker.EnterEnv(env)
+	id := env.CreateEnv(args.EnvName, args.Lang.Name, args.Lang.Version)
+	env.EnterEnv(id)
 }
