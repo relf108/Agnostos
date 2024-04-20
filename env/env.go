@@ -9,6 +9,7 @@ import (
 	"github.com/apple/pkl-go/pkl"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
 
@@ -39,10 +40,24 @@ func CreateEnv(envName string, langName string, langVersion string) string {
 	io.Copy(os.Stdout, reader)
 
 	// Create the container ready to be exec into - if the container stops immediately we can fix this by adding a `tail -f /dev/null` command
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
+	containerConf := container.Config{
 		Tty:   true,
 		Image: imageStr,
-	}, nil, nil, nil, "")
+	}
+
+	hostConf := container.HostConfig{
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: "/Users/tristan.sutton/Projects/Agnostos", // TODO @suttont: This should be read from config
+				Target: "/path/in/container",                      // TODO @suttont: This should be read from config
+			},
+		},
+	}
+
+	resp, err := cli.ContainerCreate(ctx,
+		&containerConf,
+		&hostConf, nil, nil, "")
 	if err != nil {
 		panic(err)
 	}
