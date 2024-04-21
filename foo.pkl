@@ -4,12 +4,27 @@ module agnostos.config
 import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.6.0#/go.pkl" 
 
 name: String = "configured-env"
-lang: LangConfig = new { 
+lang: Lang = new { 
   name = "golang"
   version = "latest"
 }
+mounts: Listing<Mount> = new Listing {
+  new Mount { 
+    source = "/Users/tristan.sutton/Projects/agnostos/config"
+    target = "/agnostos/config" 
+  }
+  new Mount { 
+    source = "/tmp"
+    target = "/tmp" 
+  }
+}
 
-class LangConfig {
+class Lang {
   name: String
   version: String
+}
+
+class Mount {
+  source: String
+  target: String
 }

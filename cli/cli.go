@@ -2,6 +2,8 @@ package cli
 
 import (
 	"os"
+
+	"agnostos.com/config"
 )
 
 // Operator is the type of operation to be performed on the environment
@@ -17,21 +19,11 @@ func Operator(s string) OperatorType {
 	panic("Invalid operator")
 }
 
-// Lang is the type of language to be used when creating a new environment
-type LangType struct {
-	Name    string `pkl:"name"`
-	Version string `pkl:"version"`
-}
-
-func Lang(name string, version string) LangType {
-	return LangType{name, version}
-}
-
 // Accepted args for Agnostos in order
 type Args struct {
 	EnvOperator OperatorType
 	EnvName     string
-	Lang        LangType
+	Lang        config.Lang
 }
 
 func ParseArgs() Args {
@@ -40,7 +32,7 @@ func ParseArgs() Args {
 		EnvName:     os.Args[2],
 	}
 	if args.EnvOperator == "new" {
-		args.Lang = Lang(os.Args[3], os.Args[4])
+		args.Lang = config.Lang{os.Args[3], os.Args[4]}
 	}
 	return args
 }

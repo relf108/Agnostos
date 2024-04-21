@@ -10,7 +10,9 @@ import (
 type Config struct {
 	Name string `pkl:"name"`
 
-	Lang *LangConfig `pkl:"lang"`
+	Lang *Lang `pkl:"lang"`
+
+	Mounts []*Mount `pkl:"mounts"`
 }
 
 // LoadFromPath loads the pkl module at the given path and evaluates it into a Config

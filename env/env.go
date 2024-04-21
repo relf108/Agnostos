@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-  "agnostos.com/config"
+	"agnostos.com/config"
 	"github.com/apple/pkl-go/pkl"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -16,7 +16,7 @@ import (
 
 // TODO @suttont: This should be for passing a config file, args are here as a placeholder
 
-func CreateEnv(envName string, langName string, langVersion string) string {
+func CreateEnv(config config.Config) string {
 
 	ctx := context.Background()
 
@@ -26,7 +26,7 @@ func CreateEnv(envName string, langName string, langVersion string) string {
 		panic(err)
 	}
 
-	imageStr := langName + ":" + langVersion
+	imageStr := config.Lang.Name + ":" + config.Lang.Version
 
 	reader, err := cli.ImagePull(ctx, imageStr, image.PullOptions{})
 	if err != nil {
@@ -42,13 +42,7 @@ func CreateEnv(envName string, langName string, langVersion string) string {
 	}
 
 	hostConf := container.HostConfig{
-		Mounts: []mount.Mount{
-			{
-				Type:   mount.TypeBind,
-				Source: "/Users/tristan.sutton/Projects/Agnostos", // TODO @suttont: This should be read from config
-				Target: "/path/in/container",                      // TODO @suttont: This should be read from config
-			},
-		},
+		Mounts: _toMounts(config.Mounts),
 	}
 
 	resp, err := cli.ContainerCreate(ctx,
@@ -77,7 +71,7 @@ func EnterEnv(containerId string, cfg config.Config) {
 	cmd.Run()
 }
 
-func ReadConfig() config.Config{
+func ReadConfig() config.Config {
 	evaluator, err := pkl.NewEvaluator(context.Background(), pkl.PreconfiguredOptions)
 	if err != nil {
 		panic(err)
@@ -88,4 +82,16 @@ func ReadConfig() config.Config{
 		panic(err)
 	}
 	return cfg
+}
+
+func _toMounts(mounts []*config.Mount) []mount.Mount {
+	var res []mount.Mount
+	for _, m := range mounts {
+		res = append(res, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: m.Source,
+			Target: m.Target,
+		})
+	}
+	return res
 }

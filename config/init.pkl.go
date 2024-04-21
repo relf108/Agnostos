@@ -5,5 +5,6 @@ import "github.com/apple/pkl-go/pkl"
 
 func init() {
 	pkl.RegisterMapping("agnostos.config", Config{})
-	pkl.RegisterMapping("agnostos.config#LangConfig", LangConfig{})
+	pkl.RegisterMapping("agnostos.config#Lang", Lang{})
+	pkl.RegisterMapping("agnostos.config#Mount", Mount{})
 }
