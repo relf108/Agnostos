@@ -19,8 +19,8 @@ func Operator(s string) OperatorType {
 
 // Lang is the type of language to be used when creating a new environment
 type LangType struct {
-	Name    string
-	Version string
+	Name    string `pkl:"name"`
+	Version string `pkl:"version"`
 }
 
 func Lang(name string, version string) LangType {

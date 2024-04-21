@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 
+  "agnostos.com/config"
 	"github.com/apple/pkl-go/pkl"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -14,11 +15,6 @@ import (
 )
 
 // TODO @suttont: This should be for passing a config file, args are here as a placeholder
-type NosConfig struct {
-	EnvName     string `pkl:"env_name"`
-	LangName    string `pkl:"lang_name"`
-	LangVersion string `pkl:"lang_version"`
-}
 
 func CreateEnv(envName string, langName string, langVersion string) string {
 
@@ -65,7 +61,7 @@ func CreateEnv(envName string, langName string, langVersion string) string {
 	return resp.ID
 }
 
-func EnterEnv(containerId string) {
+func EnterEnv(containerId string, cfg config.Config) {
 	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
@@ -81,14 +77,15 @@ func EnterEnv(containerId string) {
 	cmd.Run()
 }
 
-func ReadConfig() {
+func ReadConfig() config.Config{
 	evaluator, err := pkl.NewEvaluator(context.Background(), pkl.PreconfiguredOptions)
 	if err != nil {
 		panic(err)
 	}
 	defer evaluator.Close()
-	var cfg NosConfig
+	var cfg config.Config
 	if err = evaluator.EvaluateModule(context.Background(), pkl.FileSource("foo.pkl"), &cfg); err != nil {
 		panic(err)
 	}
+	return cfg
 }

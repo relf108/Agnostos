@@ -8,6 +8,8 @@ require agnostos.com/cli v1.0.0
 
 require agnostos.com/env v1.0.0
 
+require agnostos.com/config v1.0.0
+
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/apple/pkl-go v0.6.0 // indirect
@@ -44,3 +46,5 @@ replace agnostos.com/docker => ./docker
 replace agnostos.com/cli => ./cli
 
 replace agnostos.com/env => ./env
+
+replace agnostos.com/config => ./config

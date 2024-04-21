@@ -2,6 +2,10 @@ module env
 
 go 1.22.2
 
+require agnostos.com/cli v1.0.0
+
+require agnostos.com/config v1.0.0
+
 require (
 	github.com/apple/pkl-go v0.6.0
 	github.com/docker/docker v26.0.2+incompatible
@@ -28,3 +32,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.25.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 )
+
+replace agnostos.com/cli => ../cli
+
+replace agnostos.com/config => ../config

@@ -1,0 +1,15 @@
+@go.Package { name = "agnostos/config" }
+module agnostos.config
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.6.0#/go.pkl" 
+
+name: String = "configured-env"
+lang: LangConfig = new { 
+  name = "golang"
+  version = "latest"
+}
+
+class LangConfig {
+  name: String
+  version: String
+}

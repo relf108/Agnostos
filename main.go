@@ -15,6 +15,7 @@ func main() {
 		string(args.Lang.Name),
 		string(args.Lang.Version),
 	)
+  config := env.ReadConfig()
 	id := env.CreateEnv(args.EnvName, args.Lang.Name, args.Lang.Version)
-	env.EnterEnv(id)
+	env.EnterEnv(id, config)
 }
