@@ -7,7 +7,6 @@ import (
 	"os/exec"
 
 	"agnostos.com/config"
-	"github.com/apple/pkl-go/pkl"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
@@ -69,19 +68,6 @@ func EnterEnv(containerId string, cfg config.Config) {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Run()
-}
-
-func ReadConfig() config.Config {
-	evaluator, err := pkl.NewEvaluator(context.Background(), pkl.PreconfiguredOptions)
-	if err != nil {
-		panic(err)
-	}
-	defer evaluator.Close()
-	var cfg config.Config
-	if err = evaluator.EvaluateModule(context.Background(), pkl.FileSource("foo.pkl"), &cfg); err != nil {
-		panic(err)
-	}
-	return cfg
 }
 
 func _toMounts(mounts []*config.Mount) []mount.Mount {
