@@ -1,0 +1,39 @@
+// `go run github.com/apple/pkl-go/cmd/pkl-gen-go@latest foo.pkl` to generate the go code
+@go.Package { name = "agnostos/config" }
+module agnostos.config
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.6.0#/go.pkl" 
+
+name: String = "configured-env"
+lang: Lang = new { 
+  name = "openebs/nfs-server-alpine"
+  version = "latest"
+}
+mounts: Listing<Mount> = new Listing {
+  // new Mount {
+  //   source = "/"
+  //   target = "/mnt/host"
+  // }
+  new Mount { 
+    source = "/Users/tristan.sutton/Projects/agnostos/config"
+    target = "/agnostos/config" 
+  }
+  // new Mount { 
+  //   source = "/Users/tristan.sutton/.config"
+  //   target = "/root/.config" 
+  // }
+  // new Mount {
+  //   source = "/Users/tristan.sutton/.zshrc"
+  //   target = "/root/.zshrc"
+  // }
+}
+
+class Lang {
+  name: String
+  version: String
+}
+
+class Mount {
+  source: String
+  target: String
+}

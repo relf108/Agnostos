@@ -13,8 +13,6 @@ import (
 	"github.com/docker/docker/client"
 )
 
-// TODO @suttont: This should be for passing a config file, args are here as a placeholder
-
 func CreateEnv(config config.Config) string {
 
 	ctx := context.Background()
@@ -38,6 +36,17 @@ func CreateEnv(config config.Config) string {
 	containerConf := container.Config{
 		Tty:   true,
 		Image: imageStr,
+		// TODO @suttont: Not connvinced we'll actually need this but it's here for now
+		Cmd: []string{
+			"tail -f /dev/null",
+		},
+		// TODO @suttont: This is currently failing, step 3 of this article may fix the issue https://gist.github.com/proudlygeek/5721498
+		Env: []string{
+			"SHARED_DIRECTORY=" + config.Mounts[0].Target,
+			"FILEPERMISSIONS_UID=1000",
+			"FILEPERMISSIONS_GID=1000",
+			"FILEPERMISSIONS_MODE=777",
+		},
 	}
 
 	hostConf := container.HostConfig{
@@ -63,7 +72,35 @@ func EnterEnv(containerId string, cfg config.Config) {
 		panic(err)
 	}
 
-	cmd := exec.Command("/bin/sh", []string{"-c", "docker exec -it \"" + containerId + "\" \"/bin/sh\""}...)
+	cmd := exec.Command(
+		"/bin/sh",
+		[]string{
+			"-c", "docker exec -it \"" + containerId + "\" \"/bin/sh\"",
+		}...,
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Run()
+}
+
+func MountInterpreters(containerId string, cfg config.Config) {
+	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+	if err := cli.ContainerStart(context.Background(), containerId, container.StartOptions{}); err != nil {
+		panic(err)
+	}
+
+	//"docker exec -it \"" + containerId + "\" apt update -y && apt upgrade -y && apt-get install nfs-kernel-server portmap -y"
+	cmd := exec.Command(
+		"/bin/sh",
+		[]string{
+			"-c",
+			"tail -f /dev/null",
+		}...,
+	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin

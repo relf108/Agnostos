@@ -19,5 +19,6 @@ func main() {
 	path := config.FindConfig()
 	config := config.ReadConfig(path)
 	id := env.CreateEnv(config)
+  // env.MountInterpreters(id, config)
 	env.EnterEnv(id, config)
 }

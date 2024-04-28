@@ -41,9 +41,9 @@ func FindConfig() string {
 		}
 		return nil
 	})
-  if err != nil && err != io.EOF {
-    panic(err)
-  }
+	if err != nil && err != io.EOF {
+		panic(err)
+	}
 	if confPath == "" {
 		panic("No config file found")
 	}
